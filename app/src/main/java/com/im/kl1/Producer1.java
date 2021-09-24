@@ -1,8 +1,14 @@
 package com.im.kl1;
 
+import java.time.Duration;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.CreateTopicsResult;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -15,9 +21,8 @@ public class Producer1 {
         producer = new KafkaProducer<>(getKafkaProps());
     }
 
-    public void publish(String topic, String msg)
-    {
-        ProducerRecord<String,String> record = new ProducerRecord<String,String>(topic, msg);
+    public void publish(String topic, String msg) {
+        ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, msg);
         producer.send(record);
     }
 
@@ -48,5 +53,16 @@ public class Producer1 {
         props.put("value.serializer", "org.apache.kafka.common.serializa-tion.StringSerializer");
 
         return props;
+    }
+
+    public void createTopic(String topicName, int partitions, int replicas) {
+        Properties properties = new Properties();
+        properties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092,localhost:39092");
+        AdminClient adminClient = AdminClient.create(properties);
+        adminClient.close(Duration.ofSeconds(30));
+
+        CreateTopicsResult newTopic = adminClient
+                .createTopics(Collections.singletonList(new NewTopic(topicName, partitions, (short) replicas)));
+        
     }
 }
